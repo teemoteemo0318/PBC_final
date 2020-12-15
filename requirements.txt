@@ -24,7 +24,7 @@ Faker #@ file:///tmp/build/80754af9/faker_1602623994968/work
 gunicorn==20.0.4
 idna #@ file:///tmp/build/80754af9/idna_1593446292537/work
 ipykernel==5.3.4
-ipython==7.19.0
+# ipython==7.19.0
 ipython-genutils==0.2.0
 ipywidgets==7.5.1
 isort==5.4.2

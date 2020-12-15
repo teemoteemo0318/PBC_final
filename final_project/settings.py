@@ -27,19 +27,20 @@ SECRET_KEY = '=%m^c1qm^+(%1sr#g2jxt#jv7y(_+(t^z+j+rq@(h)*r%lmb2!'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['pbc2020fallfinal.herokuapp.com/']
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    # 'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django_matplotlib',
+    # 'django_matplotlib',
     'home',
     'products',
     'members',
@@ -47,6 +48,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -122,8 +124,11 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
-
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/static')
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     STATIC_DIR,
 ]
+
+# https://www.learncodewithmike.com/2020/04/django-heroku.html
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static')

@@ -3,7 +3,7 @@ import plotly.offline as opy
 from plotly.subplots import make_subplots
 import pandas as pd
 import numpy as np
-
+# import plotly.graph_objs as go 
 
 
 # https://chart-studio.plotly.com/~jackp/17421/plotly-candlestick-chart-in-python/#/
@@ -29,12 +29,15 @@ def historical_pic(df):
     fig['layout'] = dict()
     fig['layout']['hovermode'] = "x unified"
     fig['layout']['plot_bgcolor'] = 'rgb(250, 250, 250)'
+    fig['layout']['height'] = 600
+    fig['layout']['width'] = 1200
     fig['layout']['xaxis'] = dict( rangeselector = dict( visible = True ) )
-    fig['layout']['yaxis'] = dict( domain = [0, 0.2], showticklabels = False )
-    fig['layout']['yaxis2'] = dict( domain = [0.2, 0.8] )
+    fig['layout']['yaxis'] = dict( domain = [0, 0.2], showticklabels = False, fixedrange = False)
+    fig['layout']['yaxis2'] = dict( domain = [0.2, 0.8])
     fig['layout']['legend'] = dict( orientation = 'h', y=0.9, x=0.3, yanchor='bottom' )
     fig['layout']['margin'] = dict( t=40, b=40, r=40, l=40 )
 
+# https://plotly.com/python/range-slider/
     rangeselector=dict(
         visible = True,
         x = 0, y = 0.9,
@@ -63,7 +66,7 @@ def historical_pic(df):
 
 
 
-    mv_y = movingaverage(df.Close)
+    mv_y = movingaverage(df.Close,5)
     mv_x = list(df.index)
 
     # Clip the ends
@@ -72,8 +75,30 @@ def historical_pic(df):
 
     fig['data'].append( dict( x=mv_x, y=mv_y, type='scatter', mode='lines', 
                             line = dict( width = 1 ),
-                            marker = dict( color = '#E377C2' ),
-                    yaxis = 'y2', name='Moving Average' ) )
+                            marker = dict( color = '#0e51ed' ),
+                    yaxis = 'y2', name='5MA' ) )
+
+    mv_y = movingaverage(df.Close,20)
+    mv_x = list(df.index)
+    mv_x = mv_x[10:-10]
+    mv_y = mv_y[10:-10]
+
+    fig['data'].append( dict( x=mv_x, y=mv_y, type='scatter', mode='lines', 
+                            line = dict( width = 1 ),
+                            marker = dict( color = '#f09307' ),
+                    yaxis = 'y2', name='20MA' ) )
+
+    mv_y = movingaverage(df.Close,60)
+    mv_x = list(df.index)
+    mv_x = mv_x[30:-30]
+    mv_y = mv_y[30:-30]
+
+    fig['data'].append( dict( x=mv_x, y=mv_y, type='scatter', mode='lines', 
+                            line = dict( width = 1 ),
+                            marker = dict( color = '#018a14' ),
+                    yaxis = 'y2', name='60MA' ) )
+
+
     colors = []
 
     for i in range(len(df.Close)):
@@ -89,19 +114,19 @@ def historical_pic(df):
                     marker=dict( color=colors ),
                     type='bar', yaxis='y', name='Volume' ) )
 
-    bb_avg, bb_upper, bb_lower = bbands(df.Close)
+    # bb_avg, bb_upper, bb_lower = bbands(df.Close)
 
-    fig['data'].append( dict( x=df.index, y=bb_upper, type='scatter', yaxis='y2', 
-                            line = dict( width = 1 ),
-                            marker=dict(color='#ccc'), hoverinfo='none', 
-                            legendgroup='Bollinger Bands', name='Bollinger Bands') )
+    # fig['data'].append( dict( x=df.index, y=bb_upper, type='scatter', yaxis='y2', 
+    #                         line = dict( width = 1 ),
+    #                         marker=dict(color='#ccc'), hoverinfo='none', 
+    #                         legendgroup='Bollinger Bands', name='Bollinger Bands') )
 
-    fig['data'].append( dict( x=df.index, y=bb_lower, type='scatter', yaxis='y2',
-                            line = dict( width = 1 ),
-                            marker=dict(color='#ccc'), hoverinfo='none',
-                            legendgroup='Bollinger Bands', showlegend=False ) )
-    
+    # fig['data'].append( dict( x=df.index, y=bb_lower, type='scatter', yaxis='y2',
+    #                         line = dict( width = 1 ),
+    #                         marker=dict(color='#ccc'), hoverinfo='none',
+    #                         legendgroup='Bollinger Bands', showlegend=False ) )
     plot_div = opy.plot(fig, auto_open=False, output_type='div')
+
     return plot_div
 
 def movingaverage(interval, window_size=10):

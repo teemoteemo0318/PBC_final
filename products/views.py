@@ -20,30 +20,50 @@ today = date.today()
 def products(request):
 
     form = forms.Ticker()
+    url = 'https://api.finmindtrade.com/api/v3/data?dataset=USStockInfo'
+    data = requests.get(url)
+    data = data.json()
+    data = pd.DataFrame(data['data'])
+    us_stock_id = data['stock_id'].unique()
 
     if request.method == 'POST':
         form = forms.Ticker(request.POST)
         if form.is_valid():
             sic = form.cleaned_data['ticker']
+            if sic in us_stock_id:
+                dataset = "USStockPrice"
+            else:
+                dataset = "TaiwanStockPrice"
+            # 使用FinMind的API
             today = date.today().strftime("%Y-%m-%d")
             url = "https://api.finmindtrade.com/api/v3/data"
             parameter = {
                 "user_id": "r08723058",
                 "password": "tt593842",
-                "dataset": "TaiwanStockPrice",
+                "dataset": dataset,
                 "stock_id": sic,
-                "date": "2010-01-01",
+                "date": "2015-01-01",
                 "end_date": today,
             }
-            resp = requests.get(url, params=parameter)
-            data = resp.json()
-            data = pd.DataFrame(data["data"])
-            df = data[['date','open','max','min','close','Trading_Volume']]
-            df['date'] = pd.to_datetime(df['date'])
-            df = df.set_index('date')
-            df.columns = ['Open', 'High', 'Low', 'Close', 'Volume']
-            df['Volume'] = df['Volume'] // 1000
+            if dataset == "TaiwanStockPrice":
+                resp = requests.get(url, params=parameter)
+                data = resp.json()
+                data = pd.DataFrame(data["data"])
+                df = data[['date','open','max','min','close','Trading_Volume']]
+                df['date'] = pd.to_datetime(df['date'])
+                df = df.set_index('date')
+                df.columns = ['Open', 'High', 'Low', 'Close', 'Volume']
+                df['Volume'] = df['Volume']
 
+            elif dataset == "USStockPrice":
+                data = requests.get(url, params=parameter)
+                data = data.json()
+                data = pd.DataFrame(data['data'])
+                df = data[['date', 'Open', 'High', 'Low', 'Close', 'Volume']]
+                df['date'] = pd.to_datetime(df['date'])
+                df = df.set_index('date')
+
+            # 使用自己建的資料庫
             # stock = Stock.objects.filter(company=sic).order_by('date')
             # opens = []
             # highs = []
@@ -79,31 +99,7 @@ def products(request):
             plot_div = functions.historical_pic(df)
             return render(request, 'products/base.html',{'graph':plot_div, 'form':form})
     return render(request, 'products/base.html', {'form':form})
-    # sic = '2330'
-    # stock = Stock.objects.filter(company=sic).order_by('date')
-    # opens = []
-    # highs = []
-    # lows = []
-    # closes = []
-    # volumes = []
-    # dates = []
-    # for data in stock:
-    #     opens.append(data.open)
-    #     highs.append(data.high)
-    #     lows.append(data.low)
-    #     closes.append(data.close)
-    #     volumes.append(data.volume)
-    #     dates.append(data.date)
 
-    # df = pd.DataFrame()
-    # df.index.name = 'Date'
-    # df['Open'] = opens
-    # df['High'] = highs
-    # df['Low'] = lows
-    # df['Close'] = closes
-    # df['Volume'] = volumes
-    # df.index = dates
-    # df.index = pd.to_datetime(df.index)
 
     # mpl-finance
     # https://github.com/matplotlib/mplfinance/blob/master/examples/addplot.ipynb

@@ -11,6 +11,10 @@ from products import functions
 import plotly.graph_objects as go
 import plotly.offline as opy
 from plotly.subplots import make_subplots
+import requests
+from datetime import date
+
+today = date.today()
 # Create your views here.
 
 def products(request):
@@ -21,29 +25,48 @@ def products(request):
         form = forms.Ticker(request.POST)
         if form.is_valid():
             sic = form.cleaned_data['ticker']
-            stock = Stock.objects.filter(company=sic).order_by('date')
-            opens = []
-            highs = []
-            lows = []
-            closes = []
-            volumes = []
-            dates = []
-            for data in stock:
-                opens.append(data.open)
-                highs.append(data.high)
-                lows.append(data.low)
-                closes.append(data.close)
-                volumes.append(data.volume)
-                dates.append(data.date)
-            df = pd.DataFrame()
-            df.index.name = 'Date'
-            df['Open'] = opens
-            df['High'] = highs
-            df['Low'] = lows
-            df['Close'] = closes
-            df['Volume'] = volumes
-            df.index = dates
-            df.index = pd.to_datetime(df.index)
+            today = date.today().strftime("%Y-%m-%d")
+            url = "https://api.finmindtrade.com/api/v3/data"
+            parameter = {
+                "user_id": "r08723058",
+                "password": "tt593842",
+                "dataset": "TaiwanStockPrice",
+                "stock_id": sic,
+                "date": "2010-01-01",
+                "end_date": today,
+            }
+            resp = requests.get(url, params=parameter)
+            data = resp.json()
+            data = pd.DataFrame(data["data"])
+            df = data[['date','open','max','min','close','Trading_Volume']]
+            df['date'] = pd.to_datetime(df['date'])
+            df = df.set_index('date')
+            df.columns = ['Open', 'High', 'Low', 'Close', 'Volume']
+            df['Volume'] = df['Volume'] // 1000
+
+            # stock = Stock.objects.filter(company=sic).order_by('date')
+            # opens = []
+            # highs = []
+            # lows = []
+            # closes = []
+            # volumes = []
+            # dates = []
+            # for data in stock:
+            #     opens.append(data.open)
+            #     highs.append(data.high)
+            #     lows.append(data.low)
+            #     closes.append(data.close)
+            #     volumes.append(data.volume)
+            #     dates.append(data.date)
+            # df = pd.DataFrame()
+            # df.index.name = 'Date'
+            # df['Open'] = opens
+            # df['High'] = highs
+            # df['Low'] = lows
+            # df['Close'] = closes
+            # df['Volume'] = volumes
+            # df.index = dates
+            # df.index = pd.to_datetime(df.index)
 
             # figure = go.Figure(data=[go.Candlestick(x=df.index,
             #             open=df['Open'],

@@ -61,6 +61,8 @@ def historical_pic(df):
 
     fig['layout']['xaxis']['rangeselector'] = rangeselector
 
+
+
     mv_y = movingaverage(df.Close)
     mv_x = list(df.index)
 
@@ -113,3 +115,5 @@ def bbands(price, window_size=10, num_of_std=5):
     upper_band = rolling_mean + (rolling_std*num_of_std)
     lower_band = rolling_mean - (rolling_std*num_of_std)
     return rolling_mean, upper_band, lower_band
+
+

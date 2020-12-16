@@ -27,7 +27,9 @@ SECRET_KEY = '=%m^c1qm^+(%1sr#g2jxt#jv7y(_+(t^z+j+rq@(h)*r%lmb2!'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['pbc2020fallfinal.herokuapp.com']
+ALLOWED_HOSTS = ['pbc2020fallfinal.herokuapp.com',
+ '127.0.0.1',
+ ]
 
 
 # Application definition

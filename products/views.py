@@ -9,10 +9,11 @@ import numpy as np
 from products import forms
 from products import functions
 import plotly.graph_objects as go
-import plotly.offline as opy
+from plotly.offline import plot
 from plotly.subplots import make_subplots
 import requests
 from datetime import date
+import matplotlib.pyplot as plt
 
 today = date.today()
 # Create your views here.
@@ -20,31 +21,44 @@ today = date.today()
 def products(request):
 
     form = forms.Ticker()
-    url = 'https://api.finmindtrade.com/api/v3/data?dataset=USStockInfo'
-    data = requests.get(url)
-    data = data.json()
-    data = pd.DataFrame(data['data'])
-    us_stock_id = data['stock_id'].unique()
+
 
     if request.method == 'POST':
         form = forms.Ticker(request.POST)
         if form.is_valid():
-            sic = form.cleaned_data['ticker']
+            # 抓取用戶輸入的資料
+            sic = form.cleaned_data['ticker']  # 讀取用戶輸入的股票代碼
+            start_date = form.cleaned_data['start_date']  # 讀取用戶輸入的開始日期
+            end_date = form.cleaned_data['end_date']  # 讀取用戶輸入的結束日期
+            
+            # 抓取美股清單列表
+            url = 'https://api.finmindtrade.com/api/v3/data?dataset=USStockInfo'
+            data = requests.get(url)
+            data = data.json()
+            data = pd.DataFrame(data['data'])
+            us_stock_id = data['stock_id'].unique()
+            
+            # 判斷是美股還台股，選擇要抓的資料集
             if sic in us_stock_id:
                 dataset = "USStockPrice"
             else:
                 dataset = "TaiwanStockPrice"
+            
             # 使用FinMind的API
             today = date.today().strftime("%Y-%m-%d")
             url = "https://api.finmindtrade.com/api/v3/data"
+            
+            # FinMind的API參數設定
             parameter = {
                 "user_id": "r08723058",
                 "password": "tt593842",
                 "dataset": dataset,
                 "stock_id": sic,
-                "date": "2015-01-01",
-                "end_date": today,
+                "date": start_date,
+                "end_date": end_date,
             }
+
+            # 由於在FinMind中，美股及台股的資料格式不同，這邊要分別處理，調整為一致的格式
             if dataset == "TaiwanStockPrice":
                 resp = requests.get(url, params=parameter)
                 data = resp.json()
@@ -62,80 +76,39 @@ def products(request):
                 df = data[['date', 'Open', 'High', 'Low', 'Close', 'Volume']]
                 df['date'] = pd.to_datetime(df['date'])
                 df = df.set_index('date')
+            plot_div = functions.historical_pic(df) # 根據抓到的資料畫圖
+            
+            # 籌碼資料
+            url = "https://api.finmindtrade.com/api/v3/data"
+            parameter = {
+                "dataset": "InstitutionalInvestorsBuySell",
+                "stock_id": sic,
+                "date": start_date,
+                "end_date": end_date,
+            }
+            data = requests.get(url, params=parameter)
+            data = data.json()
+            data = pd.DataFrame(data['data'])
+            name = data.name.unique()
+            data['date'] = pd.to_datetime(data['date'])
+            data = data.set_index('date')
+            
+            fig = make_subplots(rows=5, cols=1, subplot_titles=['合計', '自營商避險', '自營商自行買賣', '外資', '投信'])
+            name = data.name.unique()[[0,1,3,4]]
+            buy_sum = data.groupby('date')['buy'].sum()
+            sell_sum = data.groupby('date')['sell'].sum()
+            fig.add_trace(go.Scatter(x=buy_sum.index, y=(buy_sum.values-sell_sum.values)/1000, name='三大法人合計淨買', mode='lines', line=dict(color='gray', width=1)), row=1, col=1)
+            fig.add_trace(go.Bar(x=buy_sum.index, y=buy_sum.values/1000, name='三大法人合計買', marker_color='red'), row=1, col=1)
+            fig.add_trace(go.Bar(x=sell_sum.index, y=-sell_sum.values/1000, name='三大法人合計賣', marker_color='green'), row=1, col=1)
+            for i, obj in enumerate(name):
+                df = data[data['name']==obj]
+                fig.add_trace(go.Scatter(x=df.index, y=(df.buy-df.sell)/1000, name='{} 淨買'.format(obj), mode='lines', line=dict(color='gray', width=1)), row=i+2, col=1)
+                fig.add_trace(go.Bar(x=df.index, y=df.buy/1000, name='{} buy'.format(obj),marker_color='red'), row=i+2, col=1)
+                fig.add_trace(go.Bar(x=df.index, y=-df.sell/1000, name='{} sell'.format(obj), marker_color='green'), row=i+2, col=1)
+            fig.update_layout(showlegend=False)
+            fig.update_layout(height=800, width=1200, title_text="三大法人")
+            chip = plot(fig, output_type='div')
 
-            # 使用自己建的資料庫
-            # stock = Stock.objects.filter(company=sic).order_by('date')
-            # opens = []
-            # highs = []
-            # lows = []
-            # closes = []
-            # volumes = []
-            # dates = []
-            # for data in stock:
-            #     opens.append(data.open)
-            #     highs.append(data.high)
-            #     lows.append(data.low)
-            #     closes.append(data.close)
-            #     volumes.append(data.volume)
-            #     dates.append(data.date)
-            # df = pd.DataFrame()
-            # df.index.name = 'Date'
-            # df['Open'] = opens
-            # df['High'] = highs
-            # df['Low'] = lows
-            # df['Close'] = closes
-            # df['Volume'] = volumes
-            # df.index = dates
-            # df.index = pd.to_datetime(df.index)
-
-            # figure = go.Figure(data=[go.Candlestick(x=df.index,
-            #             open=df['Open'],
-            #             high=df['High'],
-            #             low=df['Low'],
-            #             close=df['Close'])])
-
-
-            # https://chart-studio.plotly.com/~jackp/17421/plotly-candlestick-chart-in-python/#/
-            plot_div = functions.historical_pic(df)
-            return render(request, 'products/base.html',{'graph':plot_div, 'form':form})
-    return render(request, 'products/base.html', {'form':form})
-
-
-    # mpl-finance
-    # https://github.com/matplotlib/mplfinance/blob/master/examples/addplot.ipynb
-
-    # buffer = io.BytesIO()
-    # mpf.plot(df, type='candle', volume=True, savefig=buffer)
-    # buffer.seek(0)
-    # image_png = buffer.getvalue()
-    # buffer.close()
-    # graphic = base64.b64encode(image_png)
-    # graphic = graphic.decode('utf-8')
-    # return render(request, 'products/base.html',{'graphic':graphic})
-
-
-    # maplotlib
-    # https://stackoverflow.com/questions/61936775/how-to-pass-matplotlib-graph-in-django-template
-    # fig, (ax1,ax2) = plt.subplots(nrows=2, ncols=1, sharex=True,figsize=(20,8))
-    # ax1.plot(dates, highs)
-    # ax2.bar(dates, volumes)
-    # buffer = io.BytesIO()
-    # fig.savefig(buffer, format='png')
-    # buffer.seek(0)
-    # image_png = buffer.getvalue()
-    # buffer.close()
-    # graphic = base64.b64encode(image_png)
-    # graphic = graphic.decode('utf-8')
-    # return render(request, 'products/base.html',{'graphic':graphic})
-    
-    # import plotly.graph_objects as go
-    # import plotly.offline as opy
-    # # https://stackoverflow.com/questions/36846395/embedding-a-plotly-chart-in-a-django-template
-    # figure = go.Figure(data=[go.Candlestick(x=df.index,
-    #             open=df['Open'],
-    #             high=df['High'],
-    #             low=df['Low'],
-    #             close=df['Close'])])
-    # plot_div = opy.plot(figure, auto_open=False, output_type='div')
-    # return render(request, 'products/base.html',{'graph':plot_div})
+            return render(request, 'products/base.html',{'graph':plot_div, 'form':form, 'chip':chip})
+    return render(request, 'products/base.html', {'form':form, 'date':date})
 

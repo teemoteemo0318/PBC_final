@@ -10,15 +10,20 @@
                 <input type='submit' class="btn btn-primary" value="查詢">
             </form>
         </div>
+        
         <!-- 歷史股價 -->
         {% if graph %}
         <h1>交易資訊</h1>
-        <div style="width:1000;height:800">
         {{ graph|safe }}
-        </div>
         {% endif %}
-        {% if graphic %}
+        <!-- {% if graphic %}
         <img src="data:image/png;base64,{{ graphic|safe }}" alt="" height="500", width="1000">
+        {% endif %} -->
+
+        <!-- 籌碼分析 -->
+        <h1>籌碼分析</h1>
+        {% if chip %}
+        {{ chip|safe }}
         {% endif %}
     </div>
 

@@ -10,7 +10,12 @@
                 <input type='submit' class="btn btn-primary" value="查詢">
             </form>
         </div>
-        
+        <!-- 基本資料 -->
+        {% if info %}
+        <h1>基本資料</h1>
+        <h2>{{ info.stock_name }}({{ info.sic }})</h2>
+        <h2>收盤價：{{ info.today_close }}</h2>
+        {% endif %}
         <!-- 歷史股價 -->
         {% if graph %}
         <h1>交易資訊</h1>
@@ -21,8 +26,8 @@
         {% endif %} -->
 
         <!-- 籌碼分析 -->
-        <h1>籌碼分析</h1>
         {% if chip %}
+        <h1>籌碼分析</h1>
         {{ chip|safe }}
         {% endif %}
     </div>

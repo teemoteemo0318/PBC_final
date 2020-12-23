@@ -31,6 +31,16 @@ def products(request):
             start_date = form.cleaned_data['start_date']  # 讀取用戶輸入的開始日期
             end_date = form.cleaned_data['end_date']  # 讀取用戶輸入的結束日期
             
+
+            # 抓取台股清單
+            url = "https://api.finmindtrade.com/api/v3/data"
+            parameter = {
+                "dataset": "TaiwanStockInfo",
+            }
+            resp = requests.get(url, params=parameter)
+            data = resp.json()
+            stock_id = pd.DataFrame(data["data"])
+
             # 抓取美股清單列表
             url = 'https://api.finmindtrade.com/api/v3/data?dataset=USStockInfo'
             data = requests.get(url)
@@ -76,6 +86,7 @@ def products(request):
                 df = data[['date', 'Open', 'High', 'Low', 'Close', 'Volume']]
                 df['date'] = pd.to_datetime(df['date'])
                 df = df.set_index('date')
+            today_close = df.Close.values[-1]
             plot_div = functions.historical_pic(df) # 根據抓到的資料畫圖
             
             # 籌碼資料
@@ -93,7 +104,7 @@ def products(request):
             data['date'] = pd.to_datetime(data['date'])
             data = data.set_index('date')
             
-            fig = make_subplots(rows=5, cols=1, subplot_titles=['合計', '自營商避險', '自營商自行買賣', '外資', '投信'])
+            fig = make_subplots(rows=5, cols=1, shared_xaxes=True, subplot_titles=['合計', '自營商避險', '自營商自行買賣', '外資', '投信'])
             name = data.name.unique()[[0,1,3,4]]
             buy_sum = data.groupby('date')['buy'].sum()
             sell_sum = data.groupby('date')['sell'].sum()
@@ -108,7 +119,11 @@ def products(request):
             fig.update_layout(showlegend=False)
             fig.update_layout(height=800, width=1200, title_text="三大法人")
             chip = plot(fig, output_type='div')
-
-            return render(request, 'products/base.html',{'graph':plot_div, 'form':form, 'chip':chip})
+            info = {
+                'stock_name':stock_id[stock_id['stock_id']==sic].stock_name.values[0],
+                'sic':sic,
+                'today_close': today_close,
+            }
+            return render(request, 'products/base.html',{'info':info, 'graph':plot_div, 'form':form, 'chip':chip})
     return render(request, 'products/base.html', {'form':form, 'date':date})
 

@@ -19,6 +19,10 @@ today = date.today()
 # Create your views here.
 
 def products(request):
+    form = forms.Ticker()
+    info = None
+    plot_div = None
+    chip = None
 
     if request.method == 'POST':
         form = forms.Ticker(request.POST)
@@ -121,10 +125,9 @@ def products(request):
                 'sic':sic,
                 'today_close': today_close,
             }
-    else:
-        form = forms.Ticker()
-        info = None
-        plot_div = None
-        chip = None
-    return render(request, 'products/base.html',{'info':info, 'graph':plot_div, 'form':form, 'chip':chip})
+    try:
+        error = form.errors.as_data()['__all__'][0]
+    except:
+        error = None
+    return render(request, 'products/base.html',{'info':info, 'graph':plot_div, 'form':form, 'chip':chip, 'error':error})
 

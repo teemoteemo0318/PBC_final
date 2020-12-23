@@ -1,31 +1,43 @@
 <!DOCTYPE html>
 {% extends "base.html"%}
     {% block body_block %}
+    <div class="jumbotron jumbotron-fluid">
+        <div class="container">
+            <h1 class="display-4">台指期分析模型</h1>
+            <!-- <p class="lead">This is a simple hero unit, a simple jumbotron-style component for calling extra attention to featured content or information.</p> -->
+            <hr class="my-4">
+            <p>模型使用方法</p>
+        </div>
+    </div>
 
-    <div class='container'>
+
+    <div class=container>
         <form method="POST">
             {% csrf_token %}
-            {{ form.as_p }}
-            <!-- <p> 
-                {{form.start_date.label}}
-                {{form.start_date}}
-                {{form.end_date.label}}
-                {{form.end_date}}
-            </p>
-            <p>
-                {{form.up_down_filter.label}}
-                {{form.up_down_filter}}
-                {{form.ma_filter.label}}
-                {{form.ma_filter}}
-            </p>
-            <p>
-                {{form.ma_filter_len.label}}
-                {{form.ma_filter_len}}
-                {{form.holding_day.label}}
-                {{form.holding_day}} -->
-                <input type='submit' class="btn btn-primary" value="查詢">
-            </p>
+            {% if error %}
+            發生錯誤，錯誤訊息：
+            {{ error }}
+            {% endif %}
+            <div class="form-group">
+                <label>{{ form.start_date.label }}</label>
+                {{ form.start_date }}
+                <label>{{ form.end_date.label }}</label>
+                {{ form.end_date }}
+            </div>
+            <div class="form-group">
+                <label>{{ form.up_down_filter.label }}</label>
+                {{ form.up_down_filter }}
+                <label>{{ form.ma_filter.label }}</label>
+                {{ form.ma_filter }}
+                <label>{{ form.ma_filter_len.label }}</label>
+                {{ form.ma_filter_len }}
+                <label>{{ form.holding_day.label }}</label>
+                {{ form.holding_day }}
+                <input type='submit' class="btn btn-primary float-right" value="查詢">
+            </div>              
         </form>
+    </div>
+    <div class='container'>
         {% if graph %}
             <img src="data:image/png;base64,{{ graph|safe }}" alt="" height="500", width="1000">
         {% endif %}

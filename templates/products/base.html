@@ -1,13 +1,32 @@
 <!DOCTYPE html>
 {% extends "base.html"%}
     {% block body_block %}
+    <div class="jumbotron jumbotron-fluid">
+        <div class="container">
+            <h1 class="display-4">個股分析模型</h1>
+            <!-- <p class="lead">This is a simple hero unit, a simple jumbotron-style component for calling extra attention to featured content or information.</p> -->
+            <hr class="my-4">
+            <p>模型使用方法</p>
+        </div>
+    </div>
     <div class="container">
         <!-- 股價查詢 -->
-        <div class='container' style="display: flex; justify-content: flex-end">
+        <div class='container'>
             <form method="POST">
-                {{form}}
                 {% csrf_token %}
-                <input type='submit' class="btn btn-primary" value="查詢">
+                {% if error %}
+                發生錯誤，錯誤訊息：
+                {{ error }}
+                {% endif %}
+                <div class="form-group">
+                    <label>{{ form.start_date.label }}</label>
+                    {{ form.start_date }}
+                    <label>{{ form.end_date.label }}</label>
+                    {{ form.end_date }}
+                    <label>{{ form.ticker.label }}</label>
+                    {{ form.ticker }}
+                    <input type='submit' class="btn btn-primary float-right" value="查詢">
+                </div>
             </form>
         </div>
         <!-- 基本資料 -->

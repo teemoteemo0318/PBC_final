@@ -20,9 +20,6 @@ today = date.today()
 
 def products(request):
 
-    form = forms.Ticker()
-
-
     if request.method == 'POST':
         form = forms.Ticker(request.POST)
         if form.is_valid():
@@ -55,7 +52,7 @@ def products(request):
                 dataset = "TaiwanStockPrice"
             
             # 使用FinMind的API
-            today = date.today().strftime("%Y-%m-%d")
+            # today = date.today().strftime("%Y-%m-%d")
             url = "https://api.finmindtrade.com/api/v3/data"
             
             # FinMind的API參數設定
@@ -124,6 +121,10 @@ def products(request):
                 'sic':sic,
                 'today_close': today_close,
             }
-            return render(request, 'products/base.html',{'info':info, 'graph':plot_div, 'form':form, 'chip':chip})
-    return render(request, 'products/base.html', {'form':form, 'date':date})
+    else:
+        form = forms.Ticker()
+        info = None
+        plot_div = None
+        chip = None
+    return render(request, 'products/base.html',{'info':info, 'graph':plot_div, 'form':form, 'chip':chip})
 

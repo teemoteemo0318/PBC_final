@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     # 'django_matplotlib',
     'home',
     'products',
+    'tx',
     'members',
 ]
 

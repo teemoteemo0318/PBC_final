@@ -41,56 +41,84 @@ def calculate(start_date, end_date, ma_filter, up_down_filter, ma_filter_len=1, 
     data["datetime"] = data['Date'] # 日期
     data['moving_avg']=0 # 均線的價格
     data['moving_avg_updown']=0 # 收盤在該均線上或下
-    data['up_down']=0 # 當日漲或跌
-    data['end_price']=0  # 持有到結束時的收盤價
-    data['return_percent']=0 # 報酬率
+    data['up_down'] = 0 # 當日漲或跌
+    data['end_price'] = 0  # 持有到結束時的收盤價
+    data['return_percent'] = 0 # 報酬率
+
+    def on_avg(row):
+        ans = 0
+        if row['Close'] > row['moving_avg']:
+            ans = 1
+        elif row['Close'] < row['moving_avg']:
+            ans = -1
+        return ans
 
 
-    for i in range(0, data.shape[0]):  # 讀取資料 填入欄位資料：日期 均線平均 均線上下 持有到到期價格等
+    def on_avg_ud(row):
+        ans = 0
+        if row['Close'] > row['Close_lag1']:
+            ans = 1
+        elif row['Close'] < row['Close_lag1']:
+            ans = 2
+        return ans
+
+    data['moving_avg'] = data['Close'].rolling(moving_avg).mean()
+    data['moving_avg_updown'] = data.apply(on_avg, axis=1)
+    data['Close_lag1'] = data['Close'].shift(1)
+    data['up_down'] = data.apply(on_avg_ud, axis=1)
+    data = data.drop(columns=['Close_lag1'])
+    data['end_price'] = data['Close'].shift(-holddays)
+    data['return_percent'] = 100 * (data['end_price'] - data['Close']) / data['Close']
+    # for i in range(0, data.shape[0]):  # 讀取資料 填入欄位資料：日期 均線平均 均線上下 持有到到期價格等
         # data.loc[i, 'datetime'] = datetime.datetime.strptime(data.loc[i][0],"%Y/%m/%d")
-        if i >= moving_avg-1:
-            sum_temp = 0
-            for j in range(moving_avg):
-                sum_temp += data.loc[i-j,'Close']
-            if moving_avg != 0:
-                data.loc[i, 'moving_avg'] = sum_temp/moving_avg
+        # if i >= moving_avg-1:
+            # sum_temp = 0
+            # for j in range(moving_avg):
+            #     sum_temp += data.loc[i-j,'Close']
+            # if moving_avg != 0:
+            #     data.loc[i, 'moving_avg'] = sum_temp/moving_avg
 
-            if  data.loc[i,'Close'] > data.loc[i, 'moving_avg']:
-                data.loc[i, 'moving_avg_updown'] = 1
-            elif data.loc[i,'Close'] < data.loc[i, 'moving_avg']:
-                data.loc[i, 'moving_avg_updown'] = -1
+            # if  data.loc[i,'Close'] > data.loc[i, 'moving_avg']:
+            #     data.loc[i, 'moving_avg_updown'] = 1
+            # elif data.loc[i,'Close'] < data.loc[i, 'moving_avg']:
+            #     data.loc[i, 'moving_avg_updown'] = -1
 
-        if i > 0:
-            if data.loc[i,'Close'] > data.loc[i-1,'Close']:
-                data.loc[i, 'up_down'] = 1
-            elif data.loc[i,'Close'] < data.loc[i-1,'Close']:
-                data.loc[i, 'up_down'] = 2
+        # if i > 0:
+        #     if data.loc[i,'Close'] > data.loc[i-1,'Close']:
+        #         data.loc[i, 'up_down'] = 1
+        #     elif data.loc[i,'Close'] < data.loc[i-1,'Close']:
+        #         data.loc[i, 'up_down'] = 2
 
-        if i+holddays < data.shape[0]:
-            data.loc[i, 'end_price'] = data.loc[i+holddays,'Close']
-            data.loc[i, 'return_percent'] = 100* ((data.loc[i, 'end_price'] - data.loc[i,'Close'])/data.loc[i,'Close'])
-
-    temp0 = 0
-    temp1 = 0
-    temp2 = 0
-    temp3 = data.shape[0]
+        # if i+holddays < data.shape[0]:
+            # data.loc[i, 'end_price'] = data.loc[i+holddays,'Close']
+            # data.loc[i, 'return_percent'] = 100* ((data.loc[i, 'end_price'] - data.loc[i,'Close'])/data.loc[i,'Close'])
+    # print(sum(data['up_down2'] != data['up_down']))
+    # print(sum(data['end_price2'] != data['end_price']))
+    # print(sum(data['return_percent2'] != data['return_percent']))
+    # data.to_csv('test.csv')
+    # temp0 = 0
+    # temp1 = 0
+    # temp2 = 0
+    # temp3 = data.shape[0]
     data0 = []
     data1 = []
     data2 = []
     data3 = []
 
     # 取得設定的開始及結束日期內的資料
-    for i in range(0,data.shape[0]):
-        if temp0 == 0:
-            if (data.loc[i,'datetime']-startdatetime).days>=0:
-                temp0 = 1
-                temp2 = i
-                #data0 = data[i:]
-        if temp0 == 1 and temp1 == 0:
-            if (data.loc[i,'datetime']-enddatetime).days>0:
-                temp1 = 1
-                temp3 = i
-    data0 = data[temp2:temp3]
+    # for i in range(0,data.shape[0]):
+    #     if temp0 == 0:
+    #         if (data.loc[i,'datetime']-startdatetime).days>=0:
+    #             temp0 = 1
+    #             temp2 = i
+    #             #data0 = data[i:]
+    #     if temp0 == 1 and temp1 == 0:
+    #         if (data.loc[i,'datetime']-enddatetime).days>0:
+    #             temp1 = 1
+    #             temp3 = i
+    # time_mask = (data['datetime'] >= startdatetime) and (data['datatime'] <= enddatetime)
+    data0 = data[(data['datetime'] >= startdatetime) & (data['datetime'] <= enddatetime)]
+    # data0 = data[temp2:temp3]
 
 
     # 取得要的濾網及漲跌資料
@@ -115,6 +143,7 @@ def calculate(start_date, end_date, ma_filter, up_down_filter, ma_filter_len=1, 
         tmp['skew'] = data3['return_percent'].skew()
         tmp['kurtosis'] = data3['return_percent'].kurtosis()
 
+
         # 以下數行為輸出敘述統計量資料
         import plotly.graph_objects as go
         df = pd.DataFrame()
@@ -123,8 +152,9 @@ def calculate(start_date, end_date, ma_filter, up_down_filter, ma_filter_len=1, 
         df = df.round(4)
         table = go.Figure(data=[go.Table(
             header=dict(values=list(df.columns),
-                        fill_color='paleturquoise',
-                        align='left'),
+                        fill_color='#3474eb',
+                        align='left',
+                        font=dict(color='white', size=12)),
             cells=dict(values=[df['Statistics'], df.value],
                     fill_color='lavender',
                     align='left'))

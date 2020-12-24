@@ -20,7 +20,7 @@ def tx(request):
             up_down_filter = form.cleaned_data['up_down_filter']
             ma_filter_len = form.cleaned_data['ma_filter_len']
             holding_day = form.cleaned_data['holding_day']
-            plot_div, graph = functions.calculate(start_date, end_date, ma_filter, up_down_filter, ma_filter_len, holding_day)
+            # plot_div, graph = functions.calculate(start_date, end_date, ma_filter, up_down_filter, ma_filter_len, holding_day)
     try:
         error = form.errors.as_data()['__all__'][0]
     except:

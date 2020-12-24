@@ -8,6 +8,7 @@ import urllib, base64
 from django.conf import settings
 import requests
 from datetime import date
+# plt.style.use('seaborn')
 
 def calculate(start_date, end_date, ma_filter, up_down_filter, ma_filter_len=1, holding_day=1):
     startdatetime = pd.to_datetime(start_date)
@@ -107,18 +108,30 @@ def calculate(start_date, end_date, ma_filter, up_down_filter, ma_filter_len=1, 
 
     if len(data3)>=1:
 
-        reture_count  = list(data3['return_percent'].to_numpy())
+        return_count  = list(data3['return_percent'].to_numpy())
 
         import math
+        tmp = data3['return_percent'].describe()
+        tmp['skew'] = data3['return_percent'].skew()
+        tmp['kurtosis'] = data3['return_percent'].kurtosis()
+
         # 以下數行為輸出敘述統計量資料
-        # result_label1.configure(text=('mean:',round(data3['reture_percent'].mean(),3)))
-        # result_label2.configure(text=('min:',round(data3['reture_percent'].min(),3)))
-        # result_label3.configure(text=('max:',round(data3['reture_percent'].max(),3)))
-        # result_label4.configure(text=('std:',round(data3['reture_percent'].std(),3)))
-        # result_label5.configure(text=('var:',round(data3['reture_percent'].var(),3)))
-        # result_label6.configure(text=('skew:',round(data3['reture_percent'].skew(),3)))
-        # result_label7.configure(text=('kurtosis:',round(data3['reture_percent'].kurtosis(),3)))
-        # result_label8.configure(text=('medium:',round(data3['reture_percent'].median(),3)))
+        import plotly.graph_objects as go
+        df = pd.DataFrame()
+        df['Statistics'] = tmp.index
+        df['value'] = tmp.values
+        df = df.round(4)
+        table = go.Figure(data=[go.Table(
+            header=dict(values=list(df.columns),
+                        fill_color='paleturquoise',
+                        align='left'),
+            cells=dict(values=[df['Statistics'], df.value],
+                    fill_color='lavender',
+                    align='left'))
+        ])
+        import plotly.offline as opy
+        table.update_layout(width=400, height=500)
+        plot_div = opy.plot(table, auto_open=False, output_type='div')
 
         endpoints = []
 
@@ -126,7 +139,7 @@ def calculate(start_date, end_date, ma_filter, up_down_filter, ma_filter_len=1, 
         for i in range(int(10*data3['return_percent'].min())-1, int(10*data3['return_percent'].max())+1, 1):
             endpoints.append(i/10)
 
-        n, bins, _ = plt.hist(reture_count, bins = endpoints, density=1, facecolor = "gray", edgecolor = "black")
+        n, bins, _ = plt.hist(return_count, bins = endpoints, density=1, facecolor = "gray", edgecolor = "black")
         plt.cla()
         n = n/10
 
@@ -136,12 +149,16 @@ def calculate(start_date, end_date, ma_filter, up_down_filter, ma_filter_len=1, 
 
 
         # 以下數行為輸出結果的折線圖
+
         plt.plot(bins2, n) 
         plt.xlabel("Return (percent)")
         plt.ylabel("Probability")
         plt.title("Probability Function")
-        plt.xlim(data3['return_percent'].min(), data3['return_percent'].max()) # 要顯示的範圍(報酬百分比)
+        plt.xlim(data3['return_percent'].min()-0.1, data3['return_percent'].max()+0.1) # 要顯示的範圍(報酬百分比)
         plt.ylim(0)
+        ax = plt.gca()
+        ax.spines['right'].set_visible(False)
+        ax.spines['top'].set_visible(False)
 
         buffer = io.BytesIO()
         plt.savefig(buffer, format='png')
@@ -150,6 +167,6 @@ def calculate(start_date, end_date, ma_filter, up_down_filter, ma_filter_len=1, 
         buffer.close()
         graph = base64.b64encode(image_png)
         graph = graph.decode('utf-8')
-        return graph
+        return plot_div, graph
     else:
         print('符合回測條件的開盤天數為0')

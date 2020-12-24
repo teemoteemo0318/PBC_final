@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from datetime import date
 
 class BackTestForm(forms.Form):
-    start_date = forms.DateField(label='開始日期', widget=forms.DateInput(attrs={'type':'date', 'class':'form-label'}))
+    start_date = forms.DateField(label='開始日期', initial='2020-01-01', widget=forms.DateInput(attrs={'type':'date', 'class':'form-label'}))
     end_date = forms.DateField(label='結束日期', initial=date.today().strftime("%Y-%m-%d"), widget=forms.DateInput(attrs={'type':'date', 'class':'form-label'}))
     up_down_filter_choice = (
         (0, '不須漲跌濾網'),

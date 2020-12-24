@@ -39,9 +39,19 @@
         </form>
     </div>
     <div class='container'>
-        {% if graph %}
-            <img src="data:image/png;base64,{{ graph|safe }}" alt="" height="500", width="1000">
+        <div class='row'>
+            {% if graph %}
+                <img src="data:image/png;base64,{{ graph|safe }}" alt="" height="400", width="700">
+            {% endif %}
+            {% if plot_div %}
+                {{ plot_div|safe }}
+            {% endif %}
+        </div>
+        <!-- {% if graph %}
+            <img src="data:image/png;base64,{{ graph|safe }}" alt="" height="300", width="600">
         {% endif %}
+        {% if plot_div %}
+            {{ plot_div|safe }}
+        {% endif %} -->
     </div>
-
     {% endblock %}

@@ -28,5 +28,10 @@ class BackTestForm(forms.Form):
         end_date = cleaned_data["end_date"]
 
         if end_date < start_date:
-            msg = "End date should be greater than start date."
+            msg = "開始日期需早於結束日期"
+            raise forms.ValidationError(msg)
+
+        today_date = date.today()
+        if end_date > today_date:
+            msg = "結束日期不應大於今天日期"
             raise forms.ValidationError(msg)

@@ -1,5 +1,10 @@
 <!DOCTYPE html>
 {% extends "base.html"%}
+    {% load static %}
+    {% block extra_head %}
+        <link rel="stylesheet" href="{% static 'css/products.css' %}"/>
+    {% endblock %}
+
     {% block body_block %}
     <div class="jumbotron jumbotron-fluid">
         <div class="container">
@@ -15,8 +20,9 @@
             <form method="POST">
                 {% csrf_token %}
                 {% if error %}
-                發生錯誤，錯誤訊息：
-                {{ error }}
+                <div class="alert alert-danger" role="alert">
+                    發生錯誤，錯誤訊息：{{ error }}
+                </div>
                 {% endif %}
                 <div class="form-group">
                     <label>{{ form.start_date.label }}</label>
@@ -31,14 +37,35 @@
         </div>
         <!-- 基本資料 -->
         {% if info %}
-        <h1>基本資料</h1>
-        <h2>{{ info.stock_name }}({{ info.sic }})</h2>
-        <h2>收盤價：{{ info.today_close }}</h2>
+        <div class='container border'>
+            <div style="text-align:center;"><h1 text-align='center'>基本資料</h1></div>
+
+
+            <h2>
+                {{ info.stock_name }}({{ info.sic }}) &emsp;
+                {% for cate in info.industry %}
+                <span class="badge bg-light text-dark">{{ cate }}</span>
+                {% endfor %}
+            </h2>
+            
+            {% ifequal info.color 'red' %}
+                <h2><span class='badge rounded-pill bg-danger'>今日收盤：{{ info.today_close }}({{ info.diff }})</span></h2> 
+            {% endifequal %}
+            {% ifequal info.color 'green' %}
+                <h2><span class='badge rounded-pill bg-success'>今日收盤：{{ info.today_close }}({{ info.diff }})</span></h2>
+            {% endifequal %}
+            {% ifequal info.color 'gray' %}
+                <h2><span class='badge rounded-pill bg-secondary'>今日收盤：{{ info.today_close }}({{ info.diff }})</span></h2>
+
+        {% endifequal %}
+        </div>
         {% endif %}
         <!-- 歷史股價 -->
         {% if graph %}
-        <h1>交易資訊</h1>
-        {{ graph|safe }}
+        <div class='container border'>
+            <div style="text-align:center;"><h1>交易資訊</h1></div>
+            {{ graph|safe }}
+        </div>
         {% endif %}
         <!-- {% if graphic %}
         <img src="data:image/png;base64,{{ graphic|safe }}" alt="" height="500", width="1000">
@@ -46,8 +73,12 @@
 
         <!-- 籌碼分析 -->
         {% if chip %}
-        <h1>籌碼分析</h1>
-        {{ chip|safe }}
+        <div class='container border'>
+            <div style="text-align:center;">
+                <h1>籌碼分析</h1>
+                {{ chip|safe }}
+            </div>
+        </div>
         {% endif %}
     </div>
 

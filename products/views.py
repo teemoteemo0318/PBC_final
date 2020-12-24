@@ -42,21 +42,21 @@ def products(request):
             data = resp.json()
             stock_id = pd.DataFrame(data["data"])
 
-            # 抓取美股清單列表
-            url = 'https://api.finmindtrade.com/api/v3/data?dataset=USStockInfo'
-            data = requests.get(url)
-            data = data.json()
-            data = pd.DataFrame(data['data'])
-            us_stock_id = data['stock_id'].unique()
+            # # 抓取美股清單列表
+            # url = 'https://api.finmindtrade.com/api/v3/data?dataset=USStockInfo'
+            # data = requests.get(url)
+            # data = data.json()
+            # data = pd.DataFrame(data['data'])
+            # us_stock_id = data['stock_id'].unique()
             
             # 判斷是美股還台股，選擇要抓的資料集
-            if sic in us_stock_id:
-                dataset = "USStockPrice"
-            else:
-                dataset = "TaiwanStockPrice"
-            
+            # if sic in us_stock_id:
+            #     dataset = "USStockPrice"
+            # else:
+            #     dataset = "TaiwanStockPrice"
+            dataset = "TaiwanStockPrice"
             # 使用FinMind的API
-            # today = date.today().strftime("%Y-%m-%d")
+            today = date.today().strftime("%Y-%m-%d")
             url = "https://api.finmindtrade.com/api/v3/data"
             
             # FinMind的API參數設定
@@ -66,7 +66,7 @@ def products(request):
                 "dataset": dataset,
                 "stock_id": sic,
                 "date": start_date,
-                "end_date": end_date,
+                "end_date": today,
             }
 
             # 由於在FinMind中，美股及台股的資料格式不同，這邊要分別處理，調整為一致的格式
@@ -79,15 +79,17 @@ def products(request):
                 df = df.set_index('date')
                 df.columns = ['Open', 'High', 'Low', 'Close', 'Volume']
                 df['Volume'] = df['Volume']
+                today_close = df.Close.values[-1]
+                yesterday_close = df.Close.values[-2]
+                df = df[df.index <= pd.to_datetime(end_date)]
+            # elif dataset == "USStockPrice":
+            #     data = requests.get(url, params=parameter)
+            #     data = data.json()
+            #     data = pd.DataFrame(data['data'])
+            #     df = data[['date', 'Open', 'High', 'Low', 'Close', 'Volume']]
+            #     df['date'] = pd.to_datetime(df['date'])
+            #     df = df.set_index('date')
 
-            elif dataset == "USStockPrice":
-                data = requests.get(url, params=parameter)
-                data = data.json()
-                data = pd.DataFrame(data['data'])
-                df = data[['date', 'Open', 'High', 'Low', 'Close', 'Volume']]
-                df['date'] = pd.to_datetime(df['date'])
-                df = df.set_index('date')
-            today_close = df.Close.values[-1]
             plot_div = functions.historical_pic(df) # 根據抓到的資料畫圖
             
             # 籌碼資料
@@ -118,12 +120,21 @@ def products(request):
                 fig.add_trace(go.Bar(x=df.index, y=df.buy/1000, name='{} buy'.format(obj),marker_color='red'), row=i+2, col=1)
                 fig.add_trace(go.Bar(x=df.index, y=-df.sell/1000, name='{} sell'.format(obj), marker_color='green'), row=i+2, col=1)
             fig.update_layout(showlegend=False)
-            fig.update_layout(height=800, width=1200, title_text="三大法人")
+            fig.update_layout(height=800, width=1000, title_text="三大法人")
+            
             chip = plot(fig, output_type='div')
+            diff = round(today_close - yesterday_close,2)
+
+            color = 'red' if diff >= 0 else 'green'
+            color = 'gray' if diff == 0 else color
+            diff = '+' + str(diff) if diff > 0 else str(diff)
             info = {
                 'stock_name':stock_id[stock_id['stock_id']==sic].stock_name.values[0],
+                'industry':stock_id[stock_id['stock_id']==sic].industry_category.values,
                 'sic':sic,
                 'today_close': today_close,
+                'diff': diff,
+                'color': color
             }
     try:
         error = form.errors.as_data()['__all__'][0]

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+{% extends "base.html"%}
+    {% block body_block %}
+    <div class="jumbotron jumbotron-fluid">
+        <div class="container">
+            <h1 class="display-4">台指選分析模型</h1>
+            <!-- <p class="lead">This is a simple hero unit, a simple jumbotron-style component for calling extra attention to featured content or information.</p> -->
+            <hr class="my-4">
+            <p>模型使用方法</p>
+        </div>
+    </div>
+
+
+    <div class='container'>
+        <form method="POST">
+            {% csrf_token %}
+            {% if error %}
+            <div class="alert alert-danger" role="alert">
+                發生錯誤，錯誤訊息：{{ error }}
+            </div>
+            {% endif %}
+            <div class="form-group">
+                <label>{{ form.start_date.label }}</label>
+                {{ form.start_date }}
+                <input type='submit' class="btn btn-primary float-right" value="查詢">
+            </div>
+        </form>
+    </div>
+    <div class='container'>
+        {% if graph %}
+            <img src="data:image/png;base64,{{ graph|safe }}" alt="" height="500", width="1000">
+        {% endif %}
+    </div>
+
+    {% endblock %}

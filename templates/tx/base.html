@@ -15,8 +15,9 @@
         <form method="POST">
             {% csrf_token %}
             {% if error %}
-            發生錯誤，錯誤訊息：
-            {{ error }}
+            <div class="alert alert-danger" role="alert">
+                發生錯誤，錯誤訊息：{{ error }}
+            </div>
             {% endif %}
             <div class="form-group">
                 <label>{{ form.start_date.label }}</label>

@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'products',
     'tx',
     'members',
+    'option',
 ]
 
 MIDDLEWARE = [

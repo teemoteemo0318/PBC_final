@@ -30,7 +30,7 @@ def historical_pic(df):
     fig['layout']['hovermode'] = "x unified"
     fig['layout']['plot_bgcolor'] = 'rgb(250, 250, 250)'
     fig['layout']['height'] = 500
-    fig['layout']['width'] = 1200
+    fig['layout']['width'] = 1000
     fig['layout']['xaxis'] = dict( rangeselector = dict( visible = True ) )
     fig['layout']['yaxis'] = dict( domain = [0, 0.2], showticklabels = False, fixedrange = False)
     fig['layout']['yaxis2'] = dict( domain = [0.2, 0.8])

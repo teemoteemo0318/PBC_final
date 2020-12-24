@@ -115,25 +115,23 @@ def calculate(start_date, end_date, ma_filter, up_down_filter, ma_filter_len=1, 
         tmp['skew'] = data3['return_percent'].skew()
         tmp['kurtosis'] = data3['return_percent'].kurtosis()
 
-
-        plot_div = None
         # 以下數行為輸出敘述統計量資料
-        # import plotly.graph_objects as go
-        # df = pd.DataFrame()
-        # df['Statistics'] = tmp.index
-        # df['value'] = tmp.values
-        # df = df.round(4)
-        # table = go.Figure(data=[go.Table(
-        #     header=dict(values=list(df.columns),
-        #                 fill_color='paleturquoise',
-        #                 align='left'),
-        #     cells=dict(values=[df['Statistics'], df.value],
-        #             fill_color='lavender',
-        #             align='left'))
-        # ])
-        # import plotly.offline as opy
-        # table.update_layout(width=400, height=500)
-        # plot_div = opy.plot(table, auto_open=False, output_type='div')
+        import plotly.graph_objects as go
+        df = pd.DataFrame()
+        df['Statistics'] = tmp.index
+        df['value'] = tmp.values
+        df = df.round(4)
+        table = go.Figure(data=[go.Table(
+            header=dict(values=list(df.columns),
+                        fill_color='paleturquoise',
+                        align='left'),
+            cells=dict(values=[df['Statistics'], df.value],
+                    fill_color='lavender',
+                    align='left'))
+        ])
+        import plotly.offline as opy
+        table.update_layout(width=400, height=500)
+        plot_div = opy.plot(table, auto_open=False, output_type='div')
 
         endpoints = []
 

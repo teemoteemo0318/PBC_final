@@ -108,19 +108,32 @@ def get_future_price(year,month,date):#尋找當日小台期貨收盤價
             a.append(j.text.replace('\n','').replace('\t','').replace(' ',''))
     print(f'期貨收盤價為{int(a[24])}')
     return int(a[24])
-
 def correct_IV_put(futures_price,data_sell,left_day,k):#修正put的隱波
+    import mibian
+    import pandas as pd
+    import numpy as np
+    import statsmodels.api as sm
+    
     IV_sell = []
-    for i in range(len(data_sell)):
-        try:
-            #先用真實價格套入BS模型回推隱波
-            a = mibian.BS([futures_price, float(data_sell['履約價'][i]), 0.003, left_day], putPrice= float(data_sell['結算價'][i]))
-            IV_sell.append(a.impliedVolatility)
-        except:
-            pass
+    print('____執行correct_IV_put中回推隱波迴圈')
+
+    def get_IV(row):
+        return mibian.BS([futures_price, float(row['履約價']), 0.003, left_day], putPrice=float(row['結算價'])).impliedVolatility
+    # for i in range(len(data_sell)):
+    #     try:
+    #         #先用真實價格套入BS模型回推隱波
+    #         a = mibian.BS([futures_price, float(data_sell['履約價'][i]), 0.003, left_day], putPrice= float(data_sell['結算價'][i]))
+    #         IV_sell.append(a.impliedVolatility)
+    #     except:
+    #         pass
+    IV_sell = data_sell.apply(get_IV, axis=1)
+    print('____執行correct_IV_put中ployfit')
     weights_sell = np.polyfit(k, IV_sell, 6)#用6次式回歸修正
+    print('____執行correct_IV_put中ploy1d')
     model_sell = np.poly1d(weights_sell)
+    print('____執行correct_IV_put中List')
     b = list(range(min(data_sell['履約價']),max(data_sell['履約價'])+100,100))
+    print('____執行correct_IV_put中model_sell')
     pred_sell = model_sell(b)#套回修正過的回歸式回傳新的隱波
     
     return pred_sell, b#回傳
@@ -269,14 +282,21 @@ def calculate(year, month, day):
         pass
     print('執行process_df')
     data_buy, data_sell, k = process_df(year,month,date_)
+
+    data_buy = data_buy.iloc[:-10,:]
+    data_sell = data_sell.iloc[:-10,:]
+    k = k[:-10]
+    
     print('執行get_future_price')
     futures_price = get_future_price(year,month,date_)
     print('執行get_left_day')
     left_day = get_left_day(year,month,date_)
-    print('執行predict_call_price')
-    whole_buy_price = predict_call_price(futures_price,data_buy,left_day,k)
     print('執行predict_put_price')
     whole_sell_price = predict_put_price(futures_price,data_sell,left_day,k)
+    print('執行predict_call_price')
+    whole_buy_price = predict_call_price(futures_price,data_buy,left_day,k)
+    # print('執行predict_put_price')
+    # whole_sell_price = predict_put_price(futures_price,data_sell,left_day,k)
     print('執行produce_pic')
     graph = produce_pic(left_day,whole_buy_price,whole_sell_price,k,month,date_,futures_price)
     return graph

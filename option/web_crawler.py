@@ -64,4 +64,4 @@ def craw_new_data(year,month,date):
     return data
 
 if __name__ == "__main__":
-    craw_new_data(2020,1,8)
+    craw_new_data(2020,11,11)

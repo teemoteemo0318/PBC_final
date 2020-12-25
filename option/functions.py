@@ -22,6 +22,7 @@ def third_wen(y,m):#算當月結算日
 
 
 def get_left_day(year,month,day):
+    import datetime as dt
     
     if third_wen(year,month)[2] > day and month != 12:
         left_day_ = dt.date(int(third_wen(year,month)[0]),int(third_wen(year,month)[1]),int(third_wen(year,month)[2])) - dt.date(year,month,day)
@@ -43,8 +44,9 @@ def detect_lastest_data(year,month,date):
     elif f'option_data_{year}_{month}_{date}.csv' not in files:
         return False
 
-
 def distr_formula(r,k1,k2,k3,left_day,distance):#johnhull公式
+    import math
+    from scipy import integrate
     c1 = float(k1)
     c3 = float(k3)
     c2 = float(k2)
@@ -57,6 +59,11 @@ def process_df(year,month,date):#載入資料
     data = pd.read_csv(f'static/option_data/option_data_{year}_{month}_{date}.csv',encoding='cp950')
     #data = data[data['交易時段']!='盤後']
     if third_wen(year,month)[2] > date and month != 12:
+        month = str(month).rjust(2,'0')
+        data = data[data['到期月份(週別)'] == f'{year}{month}']
+        data = data.reset_index()
+        del data['index']
+    elif third_wen(year,month)[2] > date and month == 12:
         month = str(month).rjust(2,'0')
         data = data[data['到期月份(週別)'] == f'{year}{month}']
         data = data.reset_index()
@@ -117,16 +124,17 @@ def correct_IV_put(futures_price,data_sell,left_day,k):#修正put的隱波
     IV_sell = []
     print('____執行correct_IV_put中回推隱波迴圈')
 
-    def get_IV(row):
-        return mibian.BS([futures_price, float(row['履約價']), 0.003, left_day], putPrice=float(row['結算價'])).impliedVolatility
-    # for i in range(len(data_sell)):
-    #     try:
-    #         #先用真實價格套入BS模型回推隱波
-    #         a = mibian.BS([futures_price, float(data_sell['履約價'][i]), 0.003, left_day], putPrice= float(data_sell['結算價'][i]))
-    #         IV_sell.append(a.impliedVolatility)
-    #     except:
-    #         pass
-    IV_sell = data_sell.apply(get_IV, axis=1)
+    # def get_IV(row):
+    #     return mibian.BS([futures_price, float(row['履約價']), 0.003, left_day], putPrice=float(row['結算價'])).impliedVolatility
+    for i in range(len(data_sell)):
+        try:
+            #先用真實價格套入BS模型回推隱波
+            print('結算價{}:'.format(i),float(data_sell['結算價'][i]))
+            a = mibian.BS([futures_price, float(data_sell['履約價'][i]), 0.003, left_day], putPrice= float(data_sell['結算價'][i]))
+            IV_sell.append(a.impliedVolatility)
+        except:
+            pass
+    # IV_sell = data_sell.apply(get_IV, axis=1)
     print('____執行correct_IV_put中ployfit')
     weights_sell = np.polyfit(k, IV_sell, 6)#用6次式回歸修正
     print('____執行correct_IV_put中ploy1d')
@@ -144,6 +152,7 @@ def correct_IV_call(futures_price,data_buy,left_day,k):#修正call的隱波
     for i in range(len(data_buy)):
         try:
             #先用真實價格套入BS模型回推隱波
+            print('結算價{}:'.format(i),float(data_buy['結算價'][i]))
             a = mibian.BS([futures_price, float(data_buy['履約價'][i]), 0.003, left_day], callPrice= float(data_buy['結算價'][i]))
             IV_buy.append(a.impliedVolatility)
         except:
@@ -286,7 +295,10 @@ def calculate(year, month, day):
     data_buy = data_buy.iloc[:-10,:]
     data_sell = data_sell.iloc[:-10,:]
     k = k[:-10]
-    
+    print('k:',k)
+    tmp = pd.DataFrame()
+    tmp['1'] = k
+    tmp.to_csv('test.csv')
     print('執行get_future_price')
     futures_price = get_future_price(year,month,date_)
     print('執行get_left_day')

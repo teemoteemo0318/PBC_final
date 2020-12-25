@@ -2,7 +2,6 @@ import io
 import urllib, base64
 import datetime as dt
 from bs4 import BeautifulSoup
-import csv
 import time
 from option import web_crawler
 

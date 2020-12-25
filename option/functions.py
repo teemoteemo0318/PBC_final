@@ -36,7 +36,7 @@ def get_left_day(year,month,day):
     return int(str(left_day_.days))
 
 def detect_lastest_data(year,month,date):
-    mypath = "./option_data/"
+    mypath = "./static/option_data/"
     files = listdir(mypath)
     if f'option_data_{year}_{month}_{date}.csv' in files:
         return True
@@ -54,7 +54,7 @@ def distr_formula(r,k1,k2,k3,left_day,distance):#johnhull公式
 
 
 def process_df(year,month,date):#載入資料
-    data = pd.read_csv(f'option_data/option_data_{year}_{month}_{date}.csv',encoding='cp950')
+    data = pd.read_csv(f'static/option_data/option_data_{year}_{month}_{date}.csv',encoding='cp950')
     #data = data[data['交易時段']!='盤後']
     if third_wen(year,month)[2] > date and month != 12:
         month = str(month).rjust(2,'0')

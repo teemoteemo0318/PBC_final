@@ -4,6 +4,16 @@ import datetime as dt
 from bs4 import BeautifulSoup
 import time
 from option import web_crawler
+import pandas as pd
+import numpy as np
+import statsmodels.api as sm
+import matplotlib.pyplot as plt
+import mibian
+from os import listdir
+import math
+from scipy import integrate
+import requests
+import matplotlib.pyplot as plt
 
 def third_wen(y,m):#算當月結算日
     import datetime as dt
@@ -12,7 +22,6 @@ def third_wen(y,m):#算當月結算日
 
 
 def get_left_day(year,month,day):
-    import datetime as dt
     
     if third_wen(year,month)[2] > day and month != 12:
         left_day = dt.date(int(third_wen(year,month)[0]),int(third_wen(year,month)[1]),int(third_wen(year,month)[2])) - dt.date(year,month,day)
@@ -25,7 +34,6 @@ def get_left_day(year,month,day):
     return int(str(left_day.days))
 
 def detect_lastest_data(year,month,date):
-    from os import listdir
     mypath = "./"
     files = listdir(mypath)
     if f'option_data_{year}_{month}_{date}.csv' in files:
@@ -35,8 +43,6 @@ def detect_lastest_data(year,month,date):
 
 
 def distr_formula(r,k1,k2,k3,left_day,distance):#johnhull公式
-    import math
-    from scipy import integrate
     c1 = float(k1)
     c3 = float(k3)
     c2 = float(k2)
@@ -46,10 +52,8 @@ def distr_formula(r,k1,k2,k3,left_day,distance):#johnhull公式
 
 
 def process_df(year,month,date):#載入資料
-    import pandas as pd
     data = pd.read_csv(f'option_data_{year}_{month}_{date}.csv',encoding='cp950')
     #data = data[data['交易時段']!='盤後']
-    print(data)
     if third_wen(year,month)[2] > date and month != 12:
         month = str(month).rjust(2,'0')
         data = data[data['到期月份(週別)'] == f'{year}{month}']
@@ -79,12 +83,6 @@ def process_df(year,month,date):#載入資料
 
 
 def get_future_price(year,month,date):#尋找當日小台期貨收盤價
-    import pandas as pd
-    import requests
-    from bs4 import BeautifulSoup
-    import numpy
-    import csv
-    
     info = f'{year}/{month}/{date}'
     url = 'https://www.taifex.com.tw/cht/3/futDailyMarketReport'
     payload = {'queryType':'2',
@@ -118,11 +116,6 @@ def get_future_price(year,month,date):#尋找當日小台期貨收盤價
 
 
 def correct_IV_put(futures_price,data_sell,left_day,k):#修正put的隱波
-    import mibian
-    import pandas as pd
-    import numpy as np
-    import statsmodels.api as sm
-    
     IV_sell = []
     for i in range(len(data_sell)):
         try:
@@ -140,11 +133,6 @@ def correct_IV_put(futures_price,data_sell,left_day,k):#修正put的隱波
 
 
 def correct_IV_call(futures_price,data_buy,left_day,k):#修正call的隱波
-    import mibian
-    import pandas as pd
-    import numpy as np
-    import statsmodels.api as sm
-    
     IV_buy = []
     for i in range(len(data_buy)):
         try:
@@ -161,12 +149,7 @@ def correct_IV_call(futures_price,data_buy,left_day,k):#修正call的隱波
     return pred_buy, b
 
 
-def predict_call_price(futures_price,data_buy,left_day,k):#修正新的call價格
-    import mibian
-    import pandas as pd
-    import numpy as np
-    import statsmodels.api as sm
-    
+def predict_call_price(futures_price,data_buy,left_day,k):#修正新的call價格 
     pred_buy, b = correct_IV_call(futures_price,data_buy,left_day,k)#先尋找修正後的call隱波
     whole_buy_price = []
     for i in range(len(b)):
@@ -177,11 +160,6 @@ def predict_call_price(futures_price,data_buy,left_day,k):#修正新的call價�
 
 
 def predict_put_price(futures_price,data_sell,left_day,k):#修正新的put價格
-    import mibian
-    import pandas as pd
-    import numpy as np
-    import statsmodels.api as sm
-    
     pred_sell,b = correct_IV_put(futures_price,data_sell,left_day,k)#先尋找修正後的put隱波
     whole_sell_price = []
     for i in range(len(b)):
@@ -199,7 +177,6 @@ def turn_k_into_return(k,futures_price):#轉換履約價成小台期的報酬率
 
 
 def produce_pic(left_day,whole_buy_price,whole_sell_price,k,month,date,futures_price):
-    import matplotlib.pyplot as plt
     #先來把put_johnhull一下
     r = 0.0003
     k1 = list(whole_sell_price[0:len(whole_sell_price)-2])
@@ -266,12 +243,6 @@ def produce_pic(left_day,whole_buy_price,whole_sell_price,k,month,date,futures_p
 
 
 def calculate(year, month, day):
-    import pandas as pd
-    import numpy as np
-    import statsmodels.api as sm
-    import matplotlib.pyplot as plt
-    import mibian
-    import datetime as dt
     
     appoint_date = dt.date(int(year), int(month), int(day))
     now = dt.date(int(dt.datetime.now().strftime('%Y-%m-%d-%H').split('-')[0]),int(dt.datetime.now().strftime('%Y-%m-%d-%H').split('-')[1]),int(dt.datetime.now().strftime('%Y-%m-%d-%H').split('-')[2]))

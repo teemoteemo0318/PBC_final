@@ -62,9 +62,3 @@ def craw_new_data(year,month,date):
                     append_list['未沖銷契約量'] = j.text.replace('\n','').replace(' ','').replace('\t','').replace('\r','')
     data.to_csv(f'option_data_{year}_{month}_{date}.csv',index=False,encoding='cp950')
     return data
-
-if __name__ == "__main__":
-    year = 2020
-    month = 1
-    date = 3
-    data = craw_new_data(year,month,date)

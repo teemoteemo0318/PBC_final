@@ -6,6 +6,7 @@ attrs==20.3.0
 backcall==0.2.0
 bleach==3.2.1
 brotlipy==0.7.0
+bs4==4.9.3
 certifi==2020.11.8
 cffi #@ file:///C:/ci/cffi_1606255208697/work
 chardet #@ file:///C:/ci/chardet_1605303225733/work
@@ -89,6 +90,7 @@ seaborn==0.11.1
 Send2Trash==1.5.0
 # sip==4.19.13
 six==1.15.0
+statsmodels==0.12.1
 sqlparse==0.4.1
 tablib==3.0.0
 terminado==0.9.1

@@ -24,17 +24,19 @@ def third_wen(y,m):#算當月結算日
 def get_left_day(year,month,day):
     
     if third_wen(year,month)[2] > day and month != 12:
-        left_day = dt.date(int(third_wen(year,month)[0]),int(third_wen(year,month)[1]),int(third_wen(year,month)[2])) - dt.date(year,month,day)
+        left_day_ = dt.date(int(third_wen(year,month)[0]),int(third_wen(year,month)[1]),int(third_wen(year,month)[2])) - dt.date(year,month,day)
+    elif third_wen(year,month)[2] > day and month == 12:
+        left_day_ = dt.date(int(third_wen(year,month)[0]),int(third_wen(year,month)[1]),int(third_wen(year,month)[2])) - dt.date(year,month,day)
     elif third_wen(year,month)[2] <= day and month != 12:
-        left_day = dt.date(int(third_wen(year,month+1)[0]),int(third_wen(year,month+1)[1]),int(third_wen(year,month+1)[2])) - dt.date(year,month,day)
+        left_day_ = dt.date(int(third_wen(year,month+1)[0]),int(third_wen(year,month+1)[1]),int(third_wen(year,month+1)[2])) - dt.date(year,month,day)
     elif third_wen(year,month)[2] <= day and month == 12:
-        left_day = dt.date(int(third_wen(year+1,1)[0]),int(third_wen(year+1,1)[1]),int(third_wen(year+1,1)[2])) - dt.date(year,month,day)
+        left_day_ = dt.date(int(third_wen(year+1,1)[0]),int(third_wen(year+1,1)[1]),int(third_wen(year+1,1)[2])) - dt.date(year,month,day)
         
     #print(str(left_day.days))
-    return int(str(left_day.days))
+    return int(str(left_day_.days))
 
 def detect_lastest_data(year,month,date):
-    mypath = "./"
+    mypath = "./option_data/"
     files = listdir(mypath)
     if f'option_data_{year}_{month}_{date}.csv' in files:
         return True
@@ -52,7 +54,7 @@ def distr_formula(r,k1,k2,k3,left_day,distance):#johnhull公式
 
 
 def process_df(year,month,date):#載入資料
-    data = pd.read_csv(f'option_data_{year}_{month}_{date}.csv',encoding='cp950')
+    data = pd.read_csv(f'option_data/option_data_{year}_{month}_{date}.csv',encoding='cp950')
     #data = data[data['交易時段']!='盤後']
     if third_wen(year,month)[2] > date and month != 12:
         month = str(month).rjust(2,'0')
@@ -106,14 +108,6 @@ def get_future_price(year,month,date):#尋找當日小台期貨收盤價
             a.append(j.text.replace('\n','').replace('\t','').replace(' ',''))
     print(f'期貨收盤價為{int(a[24])}')
     return int(a[24])
-    #data = pd.read_csv('future_test.csv',encoding='cp950')
-    #data = data[data['交易時段']!='盤後']
-    #data = data[data['到期月份(週別)'] == f'{year}{month}']
-    #data = data.reset_index()
-    #del data['index']
-    #data = data[data['Unnamed: 0']== f'{year}/{month}/{date}']
-    #return int(data['結算價'])
-
 
 def correct_IV_put(futures_price,data_sell,left_day,k):#修正put的隱波
     IV_sell = []
@@ -273,17 +267,16 @@ def calculate(year, month, day):
         web_crawler.craw_new_data(year,month,date_)
     else:
         pass
-
-    # try:
-        # result_label1.configure(text='計算中請耐心稍等')
-
+    print('執行process_df')
     data_buy, data_sell, k = process_df(year,month,date_)
-    # print(data_buy, data_sell, k)
+    print('執行get_future_price')
     futures_price = get_future_price(year,month,date_)
+    print('執行get_left_day')
     left_day = get_left_day(year,month,date_)
+    print('執行predict_call_price')
     whole_buy_price = predict_call_price(futures_price,data_buy,left_day,k)
+    print('執行predict_put_price')
     whole_sell_price = predict_put_price(futures_price,data_sell,left_day,k)
+    print('執行produce_pic')
     graph = produce_pic(left_day,whole_buy_price,whole_sell_price,k,month,date_,futures_price)
     return graph
-    # except:
-        # result_label1.configure(text='選別天拉，那天沒交易')

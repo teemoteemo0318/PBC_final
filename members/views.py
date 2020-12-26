@@ -3,4 +3,4 @@ from django.shortcuts import render
 # Create your views here.
 
 def members(request):
-    return render(request, 'members/base.html')
+    return render(request, 'base.html')

@@ -115,6 +115,7 @@ def get_future_price(year,month,date):#尋找當日小台期貨收盤價
             a.append(j.text.replace('\n','').replace('\t','').replace(' ',''))
     print(f'期貨收盤價為{int(a[24])}')
     return int(a[24])
+
 def correct_IV_put(futures_price,data_sell,left_day,k):#修正put的隱波
     import mibian
     import pandas as pd

@@ -7,7 +7,7 @@ import mplfinance as mpf
 import pandas as pd
 import numpy as np
 from products import forms
-from products import functions
+from products import historical_data_plot, chip_data_plot
 import plotly.graph_objects as go
 from plotly.offline import plot
 from plotly.subplots import make_subplots
@@ -26,13 +26,14 @@ def products(request):
 
     if request.method == 'POST':
         form = forms.Ticker(request.POST)
+        
         if form.is_valid():
+
             # 抓取用戶輸入的資料
             sic = form.cleaned_data['ticker']  # 讀取用戶輸入的股票代碼
             start_date = form.cleaned_data['start_date']  # 讀取用戶輸入的開始日期
             end_date = form.cleaned_data['end_date']  # 讀取用戶輸入的結束日期
             
-
             # 抓取台股清單
             url = "https://api.finmindtrade.com/api/v3/data"
             parameter = {
@@ -42,18 +43,6 @@ def products(request):
             data = resp.json()
             stock_id = pd.DataFrame(data["data"])
 
-            # # 抓取美股清單列表
-            # url = 'https://api.finmindtrade.com/api/v3/data?dataset=USStockInfo'
-            # data = requests.get(url)
-            # data = data.json()
-            # data = pd.DataFrame(data['data'])
-            # us_stock_id = data['stock_id'].unique()
-            
-            # 判斷是美股還台股，選擇要抓的資料集
-            # if sic in us_stock_id:
-            #     dataset = "USStockPrice"
-            # else:
-            #     dataset = "TaiwanStockPrice"
             dataset = "TaiwanStockPrice"
             # 使用FinMind的API
             today = date.today().strftime("%Y-%m-%d")
@@ -82,15 +71,9 @@ def products(request):
                 today_close = df.Close.values[-1]
                 yesterday_close = df.Close.values[-2]
                 df = df[df.index <= pd.to_datetime(end_date)]
-            # elif dataset == "USStockPrice":
-            #     data = requests.get(url, params=parameter)
-            #     data = data.json()
-            #     data = pd.DataFrame(data['data'])
-            #     df = data[['date', 'Open', 'High', 'Low', 'Close', 'Volume']]
-            #     df['date'] = pd.to_datetime(df['date'])
-            #     df = df.set_index('date')
 
-            plot_div = functions.historical_pic(df) # 根據抓到的資料畫圖
+            # 畫歷史交易資訊圖
+            plot_div = historical_data_plot.historical_pic(df)
             
             # 籌碼資料
             url = "https://api.finmindtrade.com/api/v3/data"
@@ -103,26 +86,12 @@ def products(request):
             data = requests.get(url, params=parameter)
             data = data.json()
             data = pd.DataFrame(data['data'])
-            name = data.name.unique()
             data['date'] = pd.to_datetime(data['date'])
             data = data.set_index('date')
             
-            fig = make_subplots(rows=5, cols=1, shared_xaxes=True, subplot_titles=['合計', '自營商避險', '自營商自行買賣', '外資', '投信'])
-            name = data.name.unique()[[0,1,3,4]]
-            buy_sum = data.groupby('date')['buy'].sum()
-            sell_sum = data.groupby('date')['sell'].sum()
-            fig.add_trace(go.Scatter(x=buy_sum.index, y=(buy_sum.values-sell_sum.values)/1000, name='三大法人合計淨買', mode='lines', line=dict(color='gray', width=1)), row=1, col=1)
-            fig.add_trace(go.Bar(x=buy_sum.index, y=buy_sum.values/1000, name='三大法人合計買', marker_color='red'), row=1, col=1)
-            fig.add_trace(go.Bar(x=sell_sum.index, y=-sell_sum.values/1000, name='三大法人合計賣', marker_color='green'), row=1, col=1)
-            for i, obj in enumerate(name):
-                df = data[data['name']==obj]
-                fig.add_trace(go.Scatter(x=df.index, y=(df.buy-df.sell)/1000, name='{} 淨買'.format(obj), mode='lines', line=dict(color='gray', width=1)), row=i+2, col=1)
-                fig.add_trace(go.Bar(x=df.index, y=df.buy/1000, name='{} buy'.format(obj),marker_color='red'), row=i+2, col=1)
-                fig.add_trace(go.Bar(x=df.index, y=-df.sell/1000, name='{} sell'.format(obj), marker_color='green'), row=i+2, col=1)
-            fig.update_layout(showlegend=False)
-            fig.update_layout(height=800, width=1000, title_text="三大法人")
-            
-            chip = plot(fig, output_type='div')
+            chip = chip_data_plot.chip_pic(data)
+
+            # 獲得股票的基本資訊
             diff = round(today_close - yesterday_close,2)
 
             color = 'red' if diff >= 0 else 'green'

@@ -26,14 +26,17 @@
               <a class="nav-link" href="{% url 'products:products_home' %}">個股分析</a>
             </li>
             <li class="nav-item active">
+              <a class="nav-link" href="{% url 'stock_backtesting:stock_backtesting_home' %}">投組回測</a>
+            </li>
+            <li class="nav-item active">
               <a class="nav-link" href="{% url 'tx:tx_home' %}">台指期分析</a>
             </li>
             <li class="nav-item active">
               <a class="nav-link" href="{% url 'option:option_home' %}">台指選分析</a>
             </li>
-            <li class="nav-item active">
+            <!-- <li class="nav-item active">
               <a class="nav-link" href="{% url 'members:members_home' %}">成員介紹</a>
-            </li>
+            </li> -->
           </ul>
         </div>
       </nav>

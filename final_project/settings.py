@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'tx',
     'members',
     'option',
+    'stock_backtesting',
 ]
 
 MIDDLEWARE = [

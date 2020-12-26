@@ -25,5 +25,6 @@ urlpatterns = [
     path('tx/', include('tx.urls')),
     path('admin/', admin.site.urls),
     path('option/', include('option.urls')),
+    path('stock_backtesting/', include('stock_backtesting.urls')),
     path('', views.home)
 ]

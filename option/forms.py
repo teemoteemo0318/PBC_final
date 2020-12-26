@@ -18,3 +18,8 @@ class OpInfo(forms.Form):
         if start_date > today_date:
             msg = "開始日期需早於結束日期"
             raise forms.ValidationError(msg)
+        
+        today_date = date.today()
+        if end_date > today_date:
+            msg = "結束日期不應大於今天日期"
+            raise forms.ValidationError(msg)

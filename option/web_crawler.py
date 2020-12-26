@@ -60,8 +60,11 @@ def craw_new_data(year,month,date):
                     append_list['合計成交量'] = j.text.replace('\n','').replace(' ','').replace('\t','').replace('\r','')
                 elif (count-18)%13 == 12:
                     append_list['未沖銷契約量'] = j.text.replace('\n','').replace(' ','').replace('\t','').replace('\r','')
-    data.to_csv(f'./static/option_data/option_data_{year}_{month}_{date}.csv',index=False,encoding='cp950')
+    try:
+        data.to_csv(f'./static/option_data/option_data_{year}_{month}_{date}.csv',index=False,encoding='cp950')
+    except:
+        data.to_csv(f'../static/option_data/option_data_{year}_{month}_{date}.csv',index=False,encoding='cp950')
     return data
 
 if __name__ == "__main__":
-    craw_new_data(2020,11,11)
+    craw_new_data(2020,12,1)

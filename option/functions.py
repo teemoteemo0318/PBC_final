@@ -293,13 +293,10 @@ def calculate(year, month, day):
     print('執行process_df')
     data_buy, data_sell, k = process_df(year,month,date_)
 
-    data_buy = data_buy.iloc[:-10,:]
-    data_sell = data_sell.iloc[:-10,:]
-    k = k[:-10]
-    print('k:',k)
-    tmp = pd.DataFrame()
-    tmp['1'] = k
-    tmp.to_csv('test.csv')
+    # data_buy = data_buy.iloc[:-10,:]
+    # data_sell = data_sell.iloc[:-10,:]
+    # k = k[:-10]
+
     print('執行get_future_price')
     futures_price = get_future_price(year,month,date_)
     print('執行get_left_day')

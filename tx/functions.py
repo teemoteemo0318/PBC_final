@@ -181,9 +181,9 @@ def calculate(start_date, end_date, ma_filter, up_down_filter, ma_filter_len=1, 
         # 以下數行為輸出結果的折線圖
 
         plt.plot(bins2, n) 
-        plt.xlabel("Return (percent)")
-        plt.ylabel("Probability")
-        plt.title("Probability Function")
+        plt.xlabel("Return (percent)",fontsize=20)
+        plt.ylabel("Probability",fontsize=20)
+        plt.title("Probability Function",fontsize=20)
         plt.xlim(data3['return_percent'].min()-0.1, data3['return_percent'].max()+0.1) # 要顯示的範圍(報酬百分比)
         plt.ylim(0)
         ax = plt.gca()

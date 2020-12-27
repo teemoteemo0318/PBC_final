@@ -20,6 +20,7 @@ def stock_backtesting(request):
     form = forms.Portfolio()
     error = None
     graph = None
+    daily_return = None
     if request.method == 'POST':
         form = forms.Portfolio(request.POST)
         if form.is_valid():
@@ -33,7 +34,6 @@ def stock_backtesting(request):
             url = "https://api.finmindtrade.com/api/v3/data"
             
             price_data = pd.DataFrame()
-            price_data['total_profit'] = 0
             # FinMind的API參數設定
             for i in range(num_input):
                 sic = stock_list[i]
@@ -61,14 +61,25 @@ def stock_backtesting(request):
                 price_data['Profit_{}'.format(sic)] = (price_data['Close_{}'.format(sic)] - price_data['Close_{}'.format(sic)].shift(1)) * 1000 * num
                 mask = pd.to_datetime(price_data.index) <= pd.to_datetime(date_list[i])
                 price_data['Profit_{}'.format(sic)][mask] = 0
-                price_data['Profit_{}'.format(sic)] = price_data['Profit_{}'.format(sic)].cumsum()
-                price_data['total_profit'] = price_data['total_profit'] + price_data['Profit_{}'.format(sic)]
-            
+                price_data['Profit_cumsum_{}'.format(sic)] = price_data['Profit_{}'.format(sic)].cumsum()
+            def daily_cumsum_profit(row):
+                ans = 0
+                for stock in stock_list:
+                    ans += row['Profit_cumsum_{}'.format(stock)]
+                return ans
+            def daily_profit(row):
+                ans = 0
+                for stock in stock_list:
+                    ans += row['Profit_{}'.format(stock)]
+                return ans
+            price_data['total_cumsum'] = price_data.apply(daily_cumsum_profit, axis = 1)
+            price_data['total_daily'] = price_data.apply(daily_profit, axis = 1)
             graph = backtest_plot.plot(price_data, stock_list)
+            daily_return = backtest_plot.plot_daily_return(price_data, stock_list)
 
     try:
         error = form.errors.as_data()['__all__'][0]
     except:
         error = None
 
-    return render(request, 'stock_backtesting/base.html',{'form':form, 'error':error, 'graph':graph})
+    return render(request, 'stock_backtesting/base.html',{'form':form, 'error':error, 'graph':graph, 'daily_return':daily_return})

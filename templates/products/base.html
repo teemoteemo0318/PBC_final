@@ -69,6 +69,7 @@
         {% endif %}
         <!-- 歷史股價 -->
         {% if graph %}
+        <br/>
         <div class='container border'>
             <div style="text-align:center;"><h1>交易資訊</h1></div>
             {{ graph|safe }}
@@ -80,10 +81,21 @@
 
         <!-- 籌碼分析 -->
         {% if chip %}
+        <br/>
         <div class='container border'>
             <div style="text-align:center;">
-                <h1>籌碼分析</h1>
+                <h1>籌碼資料</h1>
                 {{ chip|safe }}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if monthly_profit %}
+        <br/>
+        <div class='container border'>
+            <div style="text-align:center;">
+                <h1>營收資料</h1>
+                {{ monthly_profit|safe }}
             </div>
         </div>
         {% endif %}

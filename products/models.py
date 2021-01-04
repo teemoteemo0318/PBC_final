@@ -1,7 +1,8 @@
 from django.db import models
 # Create your models here.
 
-
+# 建立自己的股票資料庫
+# (更新)改成使用API，因此不會用到這個model
 class Stock(models.Model):
     company = models.CharField(max_length=50)
     date = models.DateField()

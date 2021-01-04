@@ -1,3 +1,5 @@
+# 這裡放的是替代用的畫圖函數及其參考資料
+
 # mpl-finance
 # https://github.com/matplotlib/mplfinance/blob/master/examples/addplot.ipynb
 

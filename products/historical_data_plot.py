@@ -3,10 +3,8 @@ import plotly.offline as opy
 from plotly.subplots import make_subplots
 import pandas as pd
 import numpy as np
-# import plotly.graph_objs as go 
 
-
-# https://chart-studio.plotly.com/~jackp/17421/plotly-candlestick-chart-in-python/#/
+# 參考：https://chart-studio.plotly.com/~jackp/17421/plotly-candlestick-chart-in-python/#/
 
 # 畫個股歷史交易資訊
 def historical_pic(df):
@@ -48,7 +46,6 @@ def historical_pic(df):
     fig['layout']['yaxis2'] = dict( domain = [0.2, 0.8])
     fig['layout']['legend'] = dict( orientation = 'h', y=0.9, x=0.3, yanchor='bottom' )
     fig['layout']['margin'] = dict( t=40, b=40, r=40, l=40 )
-
 
 
     # 增加調整時間窗格的按鈕
@@ -120,7 +117,7 @@ def historical_pic(df):
 
 
     # 對交易量作圖
-    colors = []
+    colors = []  # 如果是上漲就畫紅色的bar；下跌畫綠色的bar
     for i in range(len(df.Close)):
         if i != 0:
             if df.Close[i] > df.Close[i-1]:
@@ -154,7 +151,7 @@ def historical_pic(df):
     return plot_div
 
 
-
+# 計算布林通道的函數
 def bbands(price, window_size=10, num_of_std=5):
     rolling_mean = price.rolling(window=window_size).mean()
     rolling_std  = price.rolling(window=window_size).std()

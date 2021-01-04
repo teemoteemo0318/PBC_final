@@ -38,7 +38,7 @@ def chip_pic(data):
     
     # 針對單一法人歷史買賣作圖
     for i, obj in enumerate(name):
-        df = data[data['name']==obj]
+        df = data[data['name']==obj]  # 擷取此法人的買賣資料
         fig.add_trace(go.Scatter(x=df.index, y=(df.buy-df.sell)/1000, name='{} 淨買'.format(obj), mode='lines', line=dict(color='gray', width=1)), row=i+2, col=1)
         fig.add_trace(go.Bar(x=df.index, y=df.buy/1000, name='{} buy'.format(obj),marker_color='red'), row=i+2, col=1)
         fig.add_trace(go.Bar(x=df.index, y=-df.sell/1000, name='{} sell'.format(obj), marker_color='green'), row=i+2, col=1)

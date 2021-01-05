@@ -26,6 +26,7 @@ def products(request):
     plot_div = None
     chip = None
     monthly_profit = None
+    table_plot = None
 
     # 如果使用者有填表單，並post，抓取使用者填入的資料
     if request.method == 'POST':
@@ -80,8 +81,7 @@ def products(request):
                 yesterday_close = df.Close.values[-2]
                 df = df[df.index <= pd.to_datetime(end_date)]
 
-            # 交易資料作圖，請見同資料夾的historical_data_plot
-            plot_div = historical_data_plot.historical_pic(df)
+            plot_div = historical_data_plot.historical_pic(df)  # 交易資料作圖，請見同資料夾的historical_data_plot
             
             # -----------------------2: 籌碼資料-----------------------
             url = "https://api.finmindtrade.com/api/v3/data"
@@ -97,12 +97,12 @@ def products(request):
             data['date'] = pd.to_datetime(data['date'])
             data = data.set_index('date')
 
-            # 籌碼資料作圖，請見同資料夾的chip_data_plot
-            chip = chip_data_plot.chip_pic(data)
+            chip = chip_data_plot.chip_pic(data)  # 籌碼資料作圖，請見同資料夾的chip_data_plot
 
             # -----------------------3: 營收資料-----------------------
             try:
                 monthly_profit = profit_data_plot.profic_pic(int(sic))
+                table_plot = profit_data_plot.statistic_table(int(sic))
             except:
                 print('No profit data is available')
 
@@ -128,4 +128,4 @@ def products(request):
         error = None
 
 
-    return render(request, 'products/base.html',{'info':info, 'graph':plot_div, 'form':form, 'chip':chip, 'monthly_profit':monthly_profit, 'error':error})
+    return render(request, 'products/base.html',{'info':info, 'graph':plot_div, 'form':form, 'chip':chip, 'monthly_profit':monthly_profit, 'error':error, 'table_plot':table_plot})
